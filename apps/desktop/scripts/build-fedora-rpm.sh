@@ -30,6 +30,10 @@ if [[ -z "${LIBCLANG_PATH:-}" ]] && (( $(clang -dumpversion | cut -d. -f1) > 21 
   [[ -n "${LIBCLANG_PATH:-}" ]] || fail "No libclang <= 21 found. Run: sudo dnf install clang21-libs"
 fi
 
+# whisper.cpp's Vulkan shader generator keeps ~1500 thread stacks reserved.
+# At the default 8-16 MB each, fork() then fails with ENOMEM on 16 GB machines.
+ulimit -s 4096
+
 # Disables -march=native so the RPM runs on CPUs other than the build machine's.
 export CMAKE_TOOLCHAIN_FILE="$repo_root/packages/rust_transcription/cmake/linux-ci-toolchain.cmake"
 export TAURI_PLATFORM=linux VOQUILL_DESKTOP_PLATFORM=linux FLAVOR=prod VITE_FLAVOR=prod

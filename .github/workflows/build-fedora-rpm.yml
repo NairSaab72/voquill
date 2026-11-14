@@ -16,11 +16,7 @@ jobs:
   build:
     name: Build and release
     runs-on: ubuntu-latest
-    container:
-      image: fedora:45
-      # whisper.cpp's Vulkan shader generator forks 64 glslc processes at once,
-      # which fails under the container's default process limits.
-      options: --ulimit nproc=-1:-1 --pids-limit -1
+    container: fedora:45
     steps:
       - name: Install base tools
         run: dnf install -y sudo git jq gh tar gzip xz cargo clang21-libs
