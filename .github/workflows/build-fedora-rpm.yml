@@ -1,0 +1,58 @@
+name: Build Fedora RPM
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "RPM version, e.g. 0.0.653"
+        required: true
+  push:
+    tags: ["fedora-v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build and release
+    runs-on: ubuntu-latest
+    container: fedora:45
+    steps:
+      - name: Install base tools
+        run: dnf install -y sudo git jq gh tar gzip xz cargo clang21-libs
+
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install build dependencies
+        env:
+          VOQUILL_ENABLE_GPU: "1"
+        run: ./apps/desktop/scripts/setup-linux.sh
+
+      - name: Resolve version
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+        run: echo "VERSION=${INPUT_VERSION:-${GITHUB_REF_NAME#fedora-v}}" >> "$GITHUB_ENV"
+
+      - name: Build RPM
+        run: ./apps/desktop/scripts/build-fedora-rpm.sh "$VERSION"
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "fedora-v${VERSION}" \
+            apps/desktop/src-tauri/target/release/bundle/rpm/*.rpm \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "Voquill ${VERSION} for Fedora 45" \
+            --notes "Unofficial rebuild of Voquill for Fedora 45. Install with \`sudo dnf install ./voquill-desktop-${VERSION}-1.x86_64.rpm\`. See the README for details."

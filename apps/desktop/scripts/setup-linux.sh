@@ -58,8 +58,10 @@ install_with_pacman() {
 }
 
 install_with_dnf() {
-  sudo dnf groupinstall -y "Development Tools"
+  sudo dnf group install -y development-tools
   sudo dnf install -y \
+    gcc-c++ \
+    make \
     cmake \
     gtk3-devel \
     webkit2gtk4.1-devel \
@@ -67,6 +69,8 @@ install_with_dnf() {
     librsvg2-devel \
     alsa-lib-devel \
     libxkbcommon-devel \
+    libxdo-devel \
+    gtk-layer-shell-devel \
     clang-devel \
     dbus-x11
 }
@@ -109,7 +113,7 @@ install_gpu_prereqs() {
     sudo dnf install -y \
       vulkan-loader-devel \
       vulkan-tools \
-      shaderc
+      glslc
   elif command_exists zypper; then
     sudo zypper install -y \
       vulkan-devel \

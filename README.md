@@ -31,6 +31,31 @@
 
 Voquill is an open-source, cross-platform AI voice typing app that lets you dictate into any desktop application, clean the transcript with AI, and keep your personal glossary in sync. The repository contains the desktop and mobile apps, documentation site, enterprise services, CLI, and shared packages.
 
+## Fedora 45 build (this fork)
+
+The upstream Linux packages do not start on Fedora 45: they need `libxdo.so.3`, and Fedora 45 ships `libxdo.so.4`. This fork rebuilds the unchanged app on Fedora 45, including the Vulkan GPU transcription sidecar.
+
+**Install:** download the RPM from [Releases](../../releases), then:
+
+```bash
+sudo dnf install ./voquill-desktop-*.rpm
+```
+
+**Build it yourself** on Fedora 45 (needs Node, pnpm and Rust):
+
+```bash
+sudo dnf install -y jq clang21-libs
+VOQUILL_ENABLE_GPU=1 ./apps/desktop/scripts/setup-linux.sh
+./apps/desktop/scripts/build-fedora-rpm.sh 0.0.653
+```
+
+The same build runs on GitHub through the `Build Fedora RPM` workflow.
+
+Things to know:
+
+- This is an unofficial, unsigned build. In-app auto-update does not work; install a newer RPM from Releases instead.
+- Sign-in and cloud features still use the original Voquill services, which this fork does not control. Local transcription does not depend on them.
+
 ## Highlights
 
 - Voice input everywhere: overlay, hotkeys, and system integrations work across macOS, Windows, and Linux.
